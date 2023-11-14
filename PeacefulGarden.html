@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Peaceful Garden</title>
+
+  <audio id="background-music" autoplay loop controls style="display: none">
+    <source src="musicaDeFundo.mp3" type="audio/mpeg">
+  </audio>
+  
+  <style>
+    /* Estilos do jogo */
+    
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #EEE8AA;
+    }
+    
+    #game-container {
+      display: flex;
+    }
+    
+    #canvas-container {
+      margin-right: 20px;
+    }
+    
+    #start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    #start-screen h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #008000;
+    }
+    
+    #start-screen p {
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000000;
+    }
+    
+    #start-screen #objetivo {
+      position: relative;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #ffffff;
+      border: 2px solid #008000;
+      border-radius: 5px;
+    }
+    
+    #start-screen #objetivo::before {
+      content: '';
+      position: absolute;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent transparent #008000 transparent;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    #start-button,
+    #restart-button,
+    #save-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+    }
+    
+    #start-button:hover,
+    #restart-button:hover {
+      background-color: #45a049;
+    }
+    
+    canvas {
+      border: 1px solid #ccc;
+    }
+    
+    #tools {
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .tool {
+      display: inline-block;
+      margin: 0 10px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      padding: 5px;
+      background-color: #fff;
+      width: auto;
+      height: auto;
+    }
+
+    #garden {
+      background-color: #fff;
+    }
+
+    #garden img {
+      width: 50px;
+      height: 50px;
+    }
+
+    #garden img[src*="tree.jpg"] {
+      width: 100px;
+      height: 100px;
+    }
+
+    #garden img[src*="flower.png"] {
+      width: 50px;
+      height: 50px;
+    }
+
+    #garden img[src*="sun.jpg"] {
+      width: 100px;
+      height: 100px;
+    }
+
+    #garden img[src*="cloud.jpg"] {
+      width: 80px;
+      height: 80px;
+    }
+
+    #garden img[src*="bird.png"] {
+      width: 70px;
+      height: 70px;
+    }
+
+    #garden img[src*="grass.png"] {
+      width: 60px;
+      height: 60px;
+    }
+
+    #garden img[src*="water.jpg"] {
+      width: 15px;
+      height: 15px;
+    }
+
+    #garden img[src*="bench.png"] {
+      width: 100px;
+      height: 50px;
+    }
+
+    #garden img[src*="path.png"] {
+      width: 80px;
+      height: 40px;
+    }
+
+    #garden img[src*="squirrel.png"] {
+      width: 40px;
+      height: 70px;
+    }
+
+    #garden img[src*="rock.jpg"] {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .selected {
+      background-color: #ddd;
+     
+    }
+    
+    #coins {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    
+    #message {
+      font-size: 18px;
+      color: red;
+      margin-top: 10px;
+    }
+    
+    #garden {
+      position: relative;
+      width: 800px;
+      height: 400px;
+      border: 2px solid #008000;
+      overflow: hidden;
+    }
+    
+    /* Estilos da tabela */
+    
+    #myTable {
+      display: none;
+      margin-top: 10px;
+      border-collapse: collapse;
+      width: 200px;
+    }
+    
+    #myTable th,
+    #myTable td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    #myTable th {
+      background-color: #008000;
+      color: #fff;
+    }
+    
+    #myTable td {
+      background-color: #f2f2f2;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="canvas-container">
+      <div id="start-screen">
+        <h1 style="margin-bottom: 5px;">Bem-vindo ao Peaceful Garden!</h1>
+        <p style="margin-bottom: 15px;">Crie e interaja com um jardim virtual relaxante.</p>
+        <div id="objetivo">
+          <span style="position: relative;">
+              Bem-vindo ao Peaceful Garden! Use sua criatividade para criar o jardim mais bonito com
+              apenas 100 coins. Divirta-se!
+          </span>
+        </div>
+        <button id="start-button">Começar</button>
+      </div>
+
+      <div id="garden">
+        <!-- Aqui as imagens serão exibidas -->
+      </div>      
+
+      <div id="tools">
+        <div class="tool" id="tree" data-cost="10">Árvore</div>
+        <div class="tool" id="flower" data-cost="5">Flor</div>
+        <div class="tool" id="water" data-cost="1">Gotas de Chuva</div>
+        <div class="tool" id="rock" data-cost="3">Pedra</div>
+        <div class="tool" id="grass" data-cost="3">Grama</div>
+        <div class="tool" id="path" data-cost="2">Solo</div>
+        <div class="tool" id="bench" data-cost="5">Banco</div>
+        <div class="tool" id="sun" data-cost="8">Sol</div>
+        <div class="tool" id="cloud" data-cost="5">Nuvem</div>
+        <div class="tool" id="bird" data-cost="10">Passarinho</div>
+        <div class="tool" id="squirrel" data-cost="5">Esquilo</div>
+      </div>
+
+      <div id="coins" style="display: none;">Moedas: 100</div>
+      <div id="message"></div>
+
+      <button id="restart-button" style="display: none;">Reiniciar</button>
+    </div>
+
+    <table id="myTable">
+      <thead>
+        <tr>
+          <th>Elemento</th>
+          <th>Valor (Coins)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Árvore</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>Flor</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>Gotas de Chuva</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>Pedra</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td>Grama</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td>Solo</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>Banco</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>Sol</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>Nuvem</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>Passarinho</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>Esquilo</td>
+          <td>5</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    var tools = document.getElementsByClassName("tool");
+    var selectedTool = null;
+    var garden = [];
+    var bench = null;
+    var coins = 100;
+
+    for (var i = 0; i < tools.length; i++) {
+      tools[i].addEventListener("click", selectTool);
+    }
+
+    document.getElementById("start-button").addEventListener("click", startGame);
+    document.getElementById("restart-button").addEventListener("click", restartGame);
+
+    function startGame() {
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("tools").style.display = "block";
+      document.getElementById("restart-button").style.display = "inline-block";
+      document.getElementById("myTable").style.display = "table";
+      document.getElementById("coins").style.display = "block"; // Exibe a quantidade de moedas
+      updateCoinsDisplay();
+      drawGarden();
+      document.getElementById("garden").addEventListener("mousedown", handleMouseDown);
+    }
+
+    function restartGame() {
+      garden = [];
+      bench = null;
+      coins = 100;
+      updateCoinsDisplay();
+      document.getElementById("message").textContent = "";
+      drawGarden();
+    }
+
+    // Função para lidar com o clique do mouse
+    function handleMouseDown(event) {
+      if (selectedTool && coins >= getToolCost(selectedTool)) {
+        var mouseX = event.clientX;
+        var mouseY = event.clientY;
+
+        var gardenRect = document.getElementById("garden").getBoundingClientRect();
+        
+        // Verifique se o clique ocorreu dentro dos limites da área do jardim
+        if (
+          mouseX >= gardenRect.left &&
+          mouseX <= gardenRect.right &&
+          mouseY >= gardenRect.top &&
+          mouseY <= gardenRect.bottom    
+        ) {
+          if (selectedTool === "tree") {
+            addImage("tree.jpg", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "flower") {
+            addImage("flower.png", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "sun") {
+            addImage("sun.jpg", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "cloud") {
+            addImage("cloud.jpg", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "bird") {
+            addImage("bird.png", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "grass") {
+            addImage("grass.png", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "water") {
+            addImage("water.jpg", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "bench") {
+            addImage("bench.png", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "path") {
+            addImage("path.png", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "squirrel") {
+            addImage("squirrel.png", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          } else if (selectedTool === "rock") {
+            addImage("rock.jpg", mouseX - gardenRect.left, mouseY - gardenRect.top);
+          }
+
+          coins -= getToolCost(selectedTool);
+          updateCoinsDisplay();
+         
+        } else {
+          document.getElementById("message").textContent = "Você não pode colocar elementos fora da área do jardim!";
+        }
+      } else {
+        document.getElementById("message").textContent = "Você não possui moedas suficientes!";
+      }
+    }
+
+    function selectTool() {
+      var toolId = this.getAttribute("id");
+
+      for (var i = 0; i < tools.length; i++) {
+        tools[i].classList.remove("selected");
+      }
+
+      if (toolId === selectedTool) {
+        selectedTool = null;
+      } else {
+        selectedTool = toolId;
+        this.classList.add("selected");
+      }
+    }
+
+    function addImage(src, x, y) {
+      var img = document.createElement("img");
+      img.src = src;
+      img.style.position = "absolute";
+      img.style.left = x + "px";
+      img.style.top = y + "px";
+      document.getElementById("garden").appendChild(img);
+    }
+
+    function updateCoinsDisplay() {
+      document.getElementById("coins").textContent = "Moedas: " + coins;
+    }
+
+    function getToolCost(toolId) {
+      var tool = document.getElementById(toolId);
+      return parseInt(tool.getAttribute("data-cost"));
+    }
+
+    function drawGarden() {
+      // Limpa todas as imagens no jardim
+      var gardenDiv = document.getElementById("garden");
+      while (gardenDiv.firstChild) {
+        gardenDiv.removeChild(gardenDiv.firstChild);
+      }
+
+    var audioTree = new Audio('tree.mp3');
+    var audioFlower = new Audio('');
+    var audioWater = new Audio('water.wav');
+    var audioRock = new Audio('rock.mp3');
+    var audioGrass = new Audio('grass.mp3');
+    var audioPath = new Audio('path.mp3');
+    var audioBench = new Audio('bench.mp3');
+    var audioSun = new Audio('');
+    var audioCloud = new Audio('');
+    var audioBird = new Audio('bird.mp3');
+    var audioSquirrel = new Audio('squirrel.mp3');
+    
+    document.getElementById("tree").addEventListener("click", function () {
+      audioTree.play();
+    });
+    
+    document.getElementById("flower").addEventListener("click", function () {
+      audioFlower.play();
+    });
+    
+    document.getElementById("water").addEventListener("click", function () {
+      audioWater.play();
+    });
+    
+    document.getElementById("rock").addEventListener("click", function () {
+      audioRock.play();
+    });
+    
+    document.getElementById("grass").addEventListener("click", function () {
+      audioGrass.play();
+    });
+    
+    document.getElementById("path").addEventListener("click", function () {
+      audioPath.play();
+    });
+    
+    document.getElementById("bench").addEventListener("click", function () {
+      audioBench.play();
+    });
+    
+    document.getElementById("sun").addEventListener("click", function () {
+      audioSun.play();
+    });
+    
+    document.getElementById("cloud").addEventListener("click", function () {
+      audioCloud.play();
+    });
+    
+    document.getElementById("bird").addEventListener("click", function () {
+      audioBird.play();
+    });
+    
+    document.getElementById("squirrel").addEventListener("click", function () {
+      audioSquirrel.play();
+    });
+    }
+  </script>
+</body>
+</html>
